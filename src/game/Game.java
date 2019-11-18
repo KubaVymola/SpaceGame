@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import rocks.AI;
 import rocks.Player;
+import rocks.Rock;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -28,6 +29,7 @@ public class Game extends Application {
 
     private ArrayList<PhysicalObject> physicalObjects;
     private ArrayList<IDrawable> drawableObjects;
+    private ArrayList<Rock> gravityObjects;
 
     private Player player;
     private Camera camera;
@@ -45,24 +47,30 @@ public class Game extends Application {
 
         this.physicalObjects = new ArrayList<>();
         this.drawableObjects = new ArrayList<>();
+        this.gravityObjects = new ArrayList<>();
     }
 
     @Override
     public void init() throws Exception {
         super.init();
 
+
         for(int i = 0; i < 1; i++)
         {
-            AI newObject = new AI(r.nextInt(800), r.nextInt(600), r.nextDouble(),
-                    50, r.nextDouble() * 0.25, r.nextDouble() * 0.25, "/images/mars-transparent.png");
+            AI newObject = new AI(100, 0, r.nextDouble(),
+                    25, -0.1, 0, 50, "/images/mars-transparent.png");
 
             physicalObjects.add(newObject);
             drawableObjects.add(newObject);
+            gravityObjects.add(newObject);
         }
 
-        player = new Player(0,0,0,25, "/images/asteroid.png");
+
+        player = new Player(0,32.3223305,0,25, 0.1, 0, 100, "/images/mars-transparent.png");
         physicalObjects.add(player);
         drawableObjects.add(player);
+        gravityObjects.add(player);
+
     }
 
     private void gameControl(KeyCode e, Stage stage)
@@ -75,14 +83,14 @@ public class Game extends Application {
     {
         double deltaSec = deltaNano / 1e9;
 
-        player.control(input);
+        player.update(input);
 
         for(IDrawable object : drawableObjects)
         {
             object.update(deltaSec);
         }
 
-        this.physics.updatePhysics(physicalObjects);
+        this.physics.updatePhysics(physicalObjects, gravityObjects);
     }
 
     private void draw(GraphicsContext gc)
@@ -128,30 +136,24 @@ public class Game extends Application {
             }
         };
 
-        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent keyEvent) {
-                KeyCode keyPressed = keyEvent.getCode();
+        scene.setOnKeyPressed(keyEvent -> {
+            KeyCode keyPressed = keyEvent.getCode();
 
-                if(!input.contains(keyPressed))
-                {
-                    player.oneTimeAction(keyPressed);
-                    gameControl(keyPressed, stage);
-                    // one time actions
-                    input.add(keyPressed);
-                }
+            if(!input.contains(keyPressed))
+            {
+                player.oneTimeAction(keyPressed);
+                gameControl(keyPressed, stage);
+                // one time actions
+                input.add(keyPressed);
             }
         });
 
-        scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent keyEvent) {
-                KeyCode keyReleased = keyEvent.getCode();
+        scene.setOnKeyReleased(keyEvent -> {
+            KeyCode keyReleased = keyEvent.getCode();
 
-                if(input.contains(keyReleased))
-                {
-                    input.remove(keyReleased);
-                }
+            if(input.contains(keyReleased))
+            {
+                input.remove(keyReleased);
             }
         });
 

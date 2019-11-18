@@ -15,12 +15,12 @@ public class Rock extends PhysicalObject implements IDamagable {
 
     private double rotationSpeed;
 
-    public Rock(double posX, double posY, double angle, double radius, double mass, String spriteSource) {
+    /*public Rock(double posX, double posY, double angle, double radius, double mass, String spriteSource) {
         this(posX, posY, angle, radius, 0, 0, mass, spriteSource);
-    }
+    }*/
 
-    public Rock(double posX, double posY, double angle, double radius, double speedX, double speedY, double mass, String spriteSourceAbsolute) {
-        super(posX, posY, angle, radius, speedX, speedY, spriteSourceAbsolute);
+    public Rock(double centerX, double centerY, double angle, double radius, double speedX, double speedY, double mass, String spriteSourceAbsolute) {
+        super(centerX, centerY, angle, radius, speedX, speedY, spriteSourceAbsolute);
 
         this.mass = mass;
         this.rotationSpeed = 0.02;

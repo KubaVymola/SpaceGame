@@ -8,13 +8,20 @@ import javafx.scene.input.KeyCode;
 import java.util.ArrayList;
 
 public class Player extends Rock implements IControllable {
-    private double maxSpeed = 1.5;
-    private double speedup = 0.02;
+    private double speedup;
+    private double maxSpeed;
+    private double targetSpeedX;
+    private double targetSpeedY;
 
     private Game game;
 
-    public Player(double posX, double posY, double angle, double radius, String spriteSource) {
-        super(posX, posY, angle, radius, 250, spriteSource);
+    public Player(double posX, double posY, double angle, double radius, double speedX, double speedY, double mass, String spriteSource) {
+        super(posX, posY, angle, radius, speedX, speedY, mass, spriteSource);
+
+        this.targetSpeedX = 0;
+        this.targetSpeedY = 0;
+        this.maxSpeed = 1.5;
+        this.speedup = 0.01;
     }
 
     @Override
@@ -25,28 +32,53 @@ public class Player extends Rock implements IControllable {
 
     @Override
     public void control(ArrayList<KeyCode> downKeys) {
-        //this.setSpeedX(0);
-        //this.setSpeedY(0);
+        //this.targetSpeedX = 0;
+        //this.targetSpeedY = 0;
 
         for(KeyCode key: downKeys)
         {
             switch (key)
             {
                 case LEFT:
-                    this.changeSpeedX(-0.01);
+                    if(this.getSpeedX() > -this.maxSpeed)
+                        this.changeSpeedX(-this.speedup);
                     break;
                 case RIGHT:
-                    this.changeSpeedX(0.01);
+                    if(this.getSpeedX() < this.maxSpeed)
+                        this.changeSpeedX(this.speedup);
                     break;
                 case UP:
-                    this.changeSpeedY(-0.01);
+                    if(this.getSpeedY() > -this.maxSpeed)
+                        this.changeSpeedY(-this.speedup);
                     break;
                 case DOWN:
-                    this.changeSpeedY(0.01);
+                    if(this.getSpeedY() < this.maxSpeed)
+                        this.changeSpeedY(this.speedup);
                     break;
                 default:
                     break;
             }
         }
+    }
+
+    private void updateSpeed()
+    {
+        if(this.getSpeedX() < this.targetSpeedX)
+            this.changeSpeedX(this.speedup);
+        if(this.getSpeedX() > this.targetSpeedX)
+            this.changeSpeedX(-this.speedup);
+
+        if(this.getSpeedY() < this.targetSpeedY)
+            this.changeSpeedY(this.speedup);
+        if(this.getSpeedY() > this.targetSpeedY)
+            this.changeSpeedY(-this.speedup);
+    }
+
+    public void update(ArrayList<KeyCode> downKeys)
+    {
+        this.control(downKeys);
+        //this.updateSpeed();
+
+        System.out.println(this.getSpeedX());
     }
 }

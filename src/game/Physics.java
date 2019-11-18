@@ -1,13 +1,42 @@
 package game;
 
 import rocks.Rock;
-
+import rocks.Player;
 import java.util.ArrayList;
 
 public class Physics {
-    public void updatePhysics(ArrayList<PhysicalObject> spaceObjects)
+    private final double gravitationConstant = 0.02;
+    private final double bounceConstant = 1;
+    private final double restitution = 0.9;
+
+    public void updatePhysics(ArrayList<PhysicalObject> spaceObjects, ArrayList<Rock> rocks)
     {
+        updateGravity(rocks);
         updateCollisions(spaceObjects);
+    }
+
+    private void updateGravity(ArrayList<Rock> rocks)
+    {
+        for(int i = 0; i < rocks.size(); i++)
+        {
+            for(int y = i + 1; y < rocks.size(); y++)
+            {
+                //if(!rocks.get(i).getClass().isAssignableFrom(Player.class))
+                //    continue;
+
+                double objectDistance = getObjectDistance(rocks.get(i), rocks.get(y));
+                Vec2d multi = rocks.get(i).getCenter().substract(rocks.get(y).getCenter()).multiply(1 / objectDistance);
+
+                double actingForce = (this.gravitationConstant * (rocks.get(i).getMass() * rocks.get(y).getMass())) /
+                        Math.pow(objectDistance, 2);
+
+                rocks.get(i).changeSpeedX(-(actingForce / rocks.get(i).getMass()) * multi.getX());
+                rocks.get(i).changeSpeedY(-(actingForce / rocks.get(i).getMass()) * multi.getY());
+
+                rocks.get(y).changeSpeedX((actingForce / rocks.get(y).getMass()) * multi.getX());
+                rocks.get(y).changeSpeedY((actingForce / rocks.get(y).getMass()) * multi.getY());
+            }
+        }
     }
 
     private void updateCollisions(ArrayList<PhysicalObject> spaceObjects)
@@ -19,13 +48,7 @@ public class Physics {
 
             for(int x = i + 1; x < spaceObjects.size(); x++)
             {
-                double objectDistance = Math.sqrt(
-                        Math.pow(spaceObjects.get(i).getCenterX() - spaceObjects.get(x).getCenterX(), 2) +
-                        Math.pow(spaceObjects.get(i).getCenterY() - spaceObjects.get(x).getCenterY(), 2));
-
-                double radiusSum = (spaceObjects.get(i).getRadius() + spaceObjects.get(x).getRadius()) * 0.8;
-
-                if(objectDistance > radiusSum)
+                if(!getObjectsColided(spaceObjects.get(i), spaceObjects.get(x)))
                     continue;
 
                 // objects collided
@@ -34,29 +57,46 @@ public class Physics {
         }
     }
 
+    private double getObjectDistance(PhysicalObject object1, PhysicalObject object2)
+    {
+        return object1.getCenter().substract(object2.getCenter()).getSize();
+    }
+
+    private boolean getObjectsColided(PhysicalObject object1, PhysicalObject object2)
+    {
+        double objectDistance = getObjectDistance(object1, object2);
+        double radiusSum = (object1.getRadius() + object2.getRadius());
+
+        return objectDistance <= radiusSum;
+    }
+
     private void collideObjects(Rock object1, Rock object2)
     {
-        double collisionLoss = 0.5; //TODO change this to global parameter
+        Vec2d delta = Vec2d.substractVectors(object1.getPos(), object2.getPos());
 
-        object1.moveX(-object1.getSpeedX());
-        object1.moveY(-object1.getSpeedY());
+        Vec2d mtd = delta.multiply((object1.getRadius() + object2.getRadius() - delta.getSize()) / delta.getSize());
 
-        object2.moveX(-object2.getSpeedX());
-        object2.moveY(-object2.getSpeedY());
+        double im1 = 1d / object1.getMass();
+        double im2 = 1d / object2.getMass();
 
-        double relSpeedX = Math.abs(object1.getSpeedX() - object2.getSpeedX());
-        double relSpeedY = Math.abs(object1.getSpeedY() - object2.getSpeedY());
+        object1.moveXY(mtd.multiply(im1 / (im1 + im2)));
+        object2.moveXY(mtd.multiply(im2 / (im1 + im2)));
 
-        double totalMass = object1.getMass() + object2.getMass();
+        Vec2d impactSpeed = object1.getSpeedVector().substract(object2.getSpeedVector());
 
-        object1.setSpeedX(relSpeedX * (1 - object1.getMass() / totalMass) *
-                (-object1.getSpeedX() / Math.abs(object1.getSpeedX())));
-        object1.setSpeedY(relSpeedY * (1 - object1.getMass() / totalMass) *
-                (-object1.getSpeedY() / Math.abs(object1.getSpeedY())));
+        double vn = impactSpeed.dot(mtd.normalize());
+        if(vn > 0.0f)
+            return;
 
-        object2.setSpeedX(relSpeedX * (1 - object2.getMass() / totalMass) *
-                (-object2.getSpeedX() / Math.abs(object2.getSpeedX())));
-        object2.setSpeedY(relSpeedY * (1 - object2.getMass() / totalMass) *
-                (-object2.getSpeedY() / Math.abs(object2.getSpeedY())));
+        double i = (-(1.0f + restitution) * vn) / (im1 + im2);
+
+        Vec2d impulse = new Vec2d(mtd.normalize().getX() * i, mtd.normalize().getY() * i);
+
+        object1.changeSpeedX(impulse.getX() * im1);
+        object1.changeSpeedY(impulse.getY() * im1);
+
+        object2.changeSpeedX(-impulse.getX() * im2);
+        object2.changeSpeedY(-impulse.getY() * im2);
     }
+
 }
