@@ -1,4 +1,4 @@
-package game;
+package physics;
 
 public class Vec2d {
     private double x;
@@ -42,7 +42,7 @@ public class Vec2d {
         return new Vec2d(this.getX() + vec2.getX(), this.getY() + vec2.getY());
     }
 
-    public Vec2d substract(Vec2d vec2)
+    public Vec2d subtract(Vec2d vec2)
     {
         return new Vec2d(this.getX() - vec2.getX(), this.getY() - vec2.getY());
     }
@@ -76,7 +76,7 @@ public class Vec2d {
     {
         return new Vec2d(vec1.getX() + vec2.getX(), vec1.getY() + vec2.getY());
     }
-    public static Vec2d substractVectors(Vec2d vec1, Vec2d vec2)
+    public static Vec2d subtractVectors(Vec2d vec1, Vec2d vec2)
     {
         return new Vec2d(vec1.getX() - vec2.getX(), vec1.getY() - vec2.getY());
     }

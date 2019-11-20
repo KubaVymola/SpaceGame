@@ -15,8 +15,8 @@ public class Player extends Rock implements IControllable {
 
     private Game game;
 
-    public Player(double posX, double posY, double angle, double radius, double speedX, double speedY, double mass, String spriteSource) {
-        super(posX, posY, angle, radius, speedX, speedY, mass, spriteSource);
+    public Player(double posX, double posY, double angle, double speedX, double speedY, int rockType) {
+        super(posX, posY, angle, speedX, speedY, rockType);
 
         this.targetSpeedX = 0;
         this.targetSpeedY = 0;
@@ -61,6 +61,11 @@ public class Player extends Rock implements IControllable {
         }
     }
 
+    @Override
+    public boolean isPlayer() {
+        return true;
+    }
+
     private void updateSpeed()
     {
         if(this.getSpeedX() < this.targetSpeedX)
@@ -78,7 +83,5 @@ public class Player extends Rock implements IControllable {
     {
         this.control(downKeys);
         //this.updateSpeed();
-
-        System.out.println(this.getSpeedX());
     }
 }

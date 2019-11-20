@@ -5,11 +5,12 @@ import interfaces.IDrawable;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.transform.Rotate;
+import physics.Vec2d;
 
 import java.io.InputStream;
 
 public abstract class PhysicalObject implements IDrawable, IDamagable {
-    private Vec2d pos;
+    private Vec2d center;
     private Vec2d speed;
 
     private double angle;
@@ -20,7 +21,7 @@ public abstract class PhysicalObject implements IDrawable, IDamagable {
     private Image sprite;
 
     public PhysicalObject(double centerX, double centerY, double angle, double radius, String spriteSourceAbsolute) {
-        this.pos = new Vec2d();
+        this.center = new Vec2d();
         this.speed = new Vec2d();
 
         this.radius = radius;
@@ -28,6 +29,17 @@ public abstract class PhysicalObject implements IDrawable, IDamagable {
 
         this.setCenter(centerX, centerY);
 
+        this.loadImage(spriteSourceAbsolute);
+    }
+
+    public PhysicalObject(double posX, double posY, double angle, double radius, double speedX, double speedY, String spriteSourceAbsolute) {
+        this(posX, posY, angle, radius, spriteSourceAbsolute);
+
+        this.speed = new Vec2d(speedX, speedY);
+    }
+
+    public void loadImage(String spriteSourceAbsolute)
+    {
         try {
             InputStream resource = getClass().getResource(spriteSourceAbsolute).openStream();
             sprite = new Image(resource);
@@ -37,32 +49,26 @@ public abstract class PhysicalObject implements IDrawable, IDamagable {
         }
     }
 
-    public PhysicalObject(double posX, double posY, double angle, double radius, double speedX, double speedY, String spriteSourceAbsolute) {
-        this(posX, posY, angle, radius, spriteSourceAbsolute);
-
-        this.speed = new Vec2d(speedX, speedY);
-    }
-
     public double getPosX() {
-        return this.pos.getX();
+        return this.getCenterX() - this.getRadius();
     }
 
     public double getPosY() {
-        return this.pos.getY();
+        return this.getCenterY() - this.getRadius();
     }
 
-    public Vec2d getPos() { return this.pos; }
+    public Vec2d getPos() { return new Vec2d(getPosX(), getPosY()); }
 
     public double getCenterX() {
-        return this.pos.getX() + this.radius;
+        return this.center.getX();
     }
 
     public double getCenterY() {
-        return this.pos.getY() + this.radius;
+        return this.center.getY();
     }
 
     public Vec2d getCenter() {
-        return new Vec2d(this.pos.getX() + this.radius, this.pos.getY() + this.radius);
+        return this.center;
     }
 
     public double getAngle() {
@@ -90,28 +96,28 @@ public abstract class PhysicalObject implements IDrawable, IDamagable {
     public double getSpeedSize() { return this.speed.getSize(); }
 
     public void setPosX(double newPosX) {
-        this.pos.setX(newPosX);
+        this.center.setX(newPosX + this.getRadius());
     }
 
     public void setPosY(double newPosY) {
-        this.pos.setY(newPosY);
+        this.center.setY(newPosY + this.getRadius());
     }
 
     public void setCenter(double newCenterX, double newCenterY)
     {
-        this.pos.setX(newCenterX - this.getRadius());
-        this.pos.setY(newCenterY - this.getRadius());
+        this.center.setX(newCenterX);
+        this.center.setY(newCenterY);
     }
 
     public void moveX(double deltaX) {
-        this.pos.setX(this.pos.getX() + deltaX);
+        this.center.setX(this.center.getX() + deltaX);
     }
 
     public void moveY(double deltaY) {
-        this.pos.setY(this.pos.getY() + deltaY);
+        this.center.setY(this.center.getY() + deltaY);
     }
 
-    public void moveXY(Vec2d move) { this.pos = this.pos.add(move);}
+    public void moveXY(Vec2d move) { this.center = this.center.add(move);}
 
     public void setAngle(double newAngle) {
         this.angle = newAngle;
@@ -153,9 +159,19 @@ public abstract class PhysicalObject implements IDrawable, IDamagable {
         return this.life > 0;
     }
 
+
+    public void addScore(int score)
+    {
+        this.life += score;
+    }
+    public int getScore()
+    {
+        return (int)this.life;
+    }
+
     private void moveSpeed()
     {
-        this.pos = this.pos.add(speed);
+        this.center = this.center.add(speed);
     }
 
     @Override
@@ -172,7 +188,8 @@ public abstract class PhysicalObject implements IDrawable, IDamagable {
         graphicsContext.setTransform(rotate.getMxx(), rotate.getMyx(), rotate.getMxy(), rotate.getMyy(),
                 rotate.getTx(), rotate.getTy());
 
-        graphicsContext.drawImage(this.sprite, this.pos.getX() - camera.getTopLeftX(), this.pos.getY() - camera.getTopLeftY(),
+        graphicsContext.drawImage(this.sprite, this.getCenterX() - this.getRadius() - camera.getTopLeftX(),
+                this.getCenterY() - this.getRadius() - camera.getTopLeftY(),
                 this.radius * 2, this.radius * 2);
 
         graphicsContext.restore();

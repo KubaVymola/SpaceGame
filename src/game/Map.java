@@ -16,10 +16,39 @@ public class Map implements IDrawable {
 
     }
 
+    private int setDrawBegining(double cameraPoint, double imageSize)
+    {
+        /*double toReturn = 0;
+        while(toReturn < cameraPoint)
+            toReturn += imageSize;
+        while(toReturn > cameraPoint)
+            toReturn -= imageSize;
+
+        return toReturn;*/
+
+        int multiplier = (int)(cameraPoint / imageSize);
+        if(multiplier <= 0)
+            multiplier-=1;
+
+        return (int)(multiplier * imageSize);
+    }
+
     @Override
     public void draw(GraphicsContext graphicsContext, Camera camera) {
-        graphicsContext.drawImage(this.backGroundTexture, 0 - camera.getTopLeftX(),
-                0 - camera.getTopLeftY());
+        double initialX = setDrawBegining(camera.getTopLeftX(), this.backGroundTexture.getWidth());
+        double initialY = setDrawBegining(camera.getTopLeftY(), this.backGroundTexture.getHeight());
+
+        for(double x = initialX; x < camera.getTopLeftX() + camera.getCameraSizeX();
+            x += this.backGroundTexture.getWidth())
+        {
+            for(double y = initialY; y < camera.getTopLeftY() + camera.getCameraSizeY();
+                y += this.backGroundTexture.getHeight())
+            {
+                graphicsContext.drawImage(this.backGroundTexture, x - camera.getTopLeftX(),
+                        y - camera.getTopLeftY(), this.backGroundTexture.getWidth(),
+                        this.backGroundTexture.getHeight());
+            }
+        }
     }
 
 }

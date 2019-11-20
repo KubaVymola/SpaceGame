@@ -17,30 +17,33 @@ public class Camera {
         this.cameraCenterY = centerY;
     }
 
-    public double getTopLeftX()
-    {
-        return this.cameraCenterX - this.cameraSizeX / 2;
-    }
-
-    public double getTopLeftY()
-    {
-        return this.cameraCenterY - this.cameraSizeY / 2;
-    }
-
     public void setSizeX(double sizeX)
     {
         this.cameraSizeX = sizeX;
     }
+
     public void setSizeY(double sizeY)
     {
         this.cameraSizeY = sizeY;
     }
 
-    public double getCameraSizeX() {
-        return cameraSizeX;
+    public double getTopLeftX()
+    {
+        return this.cameraCenterX - (this.cameraSizeX / 2);
     }
 
-    public double getCameraSizeY() {
-        return cameraSizeY;
+    public double getTopLeftY()
+    {
+        return this.cameraCenterY - (this.cameraSizeY / 2);
+    }
+
+    public double getCameraSizeX()
+    {
+        return this.cameraSizeX;
+    }
+
+    public double getCameraSizeY()
+    {
+        return this.cameraSizeY;
     }
 }
