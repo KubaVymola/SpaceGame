@@ -13,8 +13,6 @@ public class Player extends Rock implements IControllable {
     private double targetSpeedX;
     private double targetSpeedY;
 
-    private Game game;
-
     public Player(double posX, double posY, double angle, double speedX, double speedY, int rockType) {
         super(posX, posY, angle, speedX, speedY, rockType);
 
@@ -25,10 +23,16 @@ public class Player extends Rock implements IControllable {
     }
 
     @Override
-    public void oneTimeAction(KeyCode pressedKey) {
+    public void oneTimeAction(KeyCode pressedKey)
+    {
         if (pressedKey == KeyCode.SHIFT)
-            this.setRadius(this.getRadius() == 50 ? 100 : 50);
+        {
+            this.eatSmallestChild();
+            //this.setRadius(this.getRadius() == 50 ? 100 : 50);
+        }
     }
+
+
 
     @Override
     public void control(ArrayList<KeyCode> downKeys) {

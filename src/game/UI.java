@@ -3,6 +3,7 @@ package game;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import physics.Orbit;
 import rocks.Player;
 import rocks.Rock;
 import rocks.RockType;
@@ -10,6 +11,27 @@ import rocks.RockType;
 public class UI {
     private static final int xAlign = 95;
 
+
+    public static void predraw(GraphicsContext gc, Camera camera, Player player)
+    {
+        if(!player.isAlive())
+            return;
+
+        for(Orbit o : player.getOrbits())
+        {
+            if(o.isOccupied())
+                continue;
+
+            gc.strokeOval(player.getCenterX() - camera.getTopLeftX() - o.getRadius(),
+                    player.getCenterY() - camera.getTopLeftY() - o.getRadius(),
+                    o.getRadius() * 2, o.getRadius() * 2);
+        }
+        for(Rock r : player.getChildBodies())
+        {
+            gc.strokeLine(player.getCenterX() - camera.getTopLeftX(), player.getCenterY() - camera.getTopLeftY(),
+                    r.getCenterX() - camera.getTopLeftX(), r.getCenterY() - camera.getTopLeftY());
+        }
+    }
 
     public static void draw(GraphicsContext gc, Camera camera, Player player)
     {
@@ -26,5 +48,8 @@ public class UI {
         gc.strokeRect(UI.xAlign, 100,50, 10);
         gc.fillRect(UI.xAlign, 100,
                 ((double)player.getScore() / RockType.rockTypes.get(player.getRockTypeIndex()).getToNext()) * 50, 10);
+
+
+        gc.setLineWidth(0.5);
     }
 }

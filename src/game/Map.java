@@ -11,7 +11,7 @@ public class Map implements IDrawable {
         this.backGroundTexture = new Image("seamless_space.png");
     }
 
-    @Override
+
     public void update(double deltaSecond) {
 
     }

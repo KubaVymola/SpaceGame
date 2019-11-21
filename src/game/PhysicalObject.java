@@ -15,8 +15,9 @@ public abstract class PhysicalObject implements IDrawable, IDamagable {
 
     private double angle;
     private double radius;
-
     private double life;
+
+    private boolean destroyed;
 
     private Image sprite;
 
@@ -26,6 +27,7 @@ public abstract class PhysicalObject implements IDrawable, IDamagable {
 
         this.radius = radius;
         this.angle = angle;
+        this.destroyed = false;
 
         this.setCenter(centerX, centerY);
 
@@ -159,25 +161,39 @@ public abstract class PhysicalObject implements IDrawable, IDamagable {
         return this.life > 0;
     }
 
+    public void destroy()
+    {
+        this.destroyed = true;
+    }
+    public boolean isDestroyed()
+    {
+        return this.destroyed;
+    }
 
     public void addScore(int score)
     {
         this.life += score;
+
+        if(this.life <= 0)
+        {
+            this.life = 0;
+            this.destroy();
+        }
     }
     public int getScore()
     {
         return (int)this.life;
     }
 
-    private void moveSpeed()
+    public void moveSpeed()
     {
         this.center = this.center.add(speed);
     }
 
-    @Override
-    public void update(double deltaSecond) {
+    //@Override
+    /*public void update(double deltaSecond) {
         this.moveSpeed();
-    }
+    }*/
 
     @Override
     public void draw(GraphicsContext graphicsContext, Camera camera) {

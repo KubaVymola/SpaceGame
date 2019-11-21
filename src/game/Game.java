@@ -1,5 +1,29 @@
 package game;
 
+/**
+ *
+ * *TODO 1: Catch obejcts into orbit around planet
+ * *TODO 1.1: Make planets catch asteroids
+ * *TODO 1.2: Make suns catch planets
+ * *TODO 1.3: Test correct catching (also non-planet, non-sun cannot catch anything)
+ * TODO 1.4: Eating mechanics to grow planets and suns
+ * TODO 2: Damage system to hurt asteroids, planets and suns
+ * TODO 2.1: Death and restart system
+ * TODO 3: Black hole mechanics
+ * TODO 4: Generate random objects outside of screen
+ * TODO 4.1: Optimize the amount of existing bodies (to limit the n^2 complexity) outside of view
+ * TODO 5: Planet with life
+ * TODO 5.1: Life evolution mechanics
+ * TODO 5.2: Shiled mechanics
+ * TODO 5.3: Shots
+ * TODO 5.4: Spawning (cannons and ships)
+ * TODO 5.5: Cannon mechanics
+ * TODO 5.6: AI ships
+ * TODO 5.6.1: Make AI not attack even the parent of parent body (check the parent-child tree)
+ * TODO 6: Check life can evolve on child plaent around the sun
+ *
+ */
+
 
 import interfaces.IDrawable;
 import javafx.animation.AnimationTimer;
@@ -42,7 +66,7 @@ public class Game extends Application {
     private ArrayList<KeyCode> input = new ArrayList<>();
 
     public Game() {
-        r = new Random(2);
+        r = new Random(3);
         RockType.initRockTypes();
 
         this.map = new Map();
@@ -58,7 +82,7 @@ public class Game extends Application {
     public void init() throws Exception {
         super.init();
 
-        player = new Player(0,0,0,0, 0.1, 0);
+        player = new Player(0,0,0,0, 0.1, 5);
         physicalObjects.add(player);
         drawableObjects.add(player);
         gravityObjects.add(player);
@@ -66,7 +90,7 @@ public class Game extends Application {
         for(int i = 0; i < 15; i++)
         {
             AI newObject = new AI(r.nextInt(800) - 400, r.nextInt(600) - 300, r.nextDouble(),
-                    r.nextDouble() - 0.5d, r.nextDouble() - 0.5d, 0);
+                    0, 0, r.nextInt(4));
 
             physicalObjects.add(newObject);
             drawableObjects.add(newObject);
@@ -81,7 +105,8 @@ public class Game extends Application {
         for(int i = this.gravityObjects.size() - 1; i >= 0; i--)
         {
             Rock r = this.gravityObjects.get(i);
-            if(r.isDestroyed()) {
+            if(r.isDestroyed())
+            {
                 this.gravityObjects.remove(r);
                 this.drawableObjects.remove(r);
                 this.physicalObjects.remove(r);
@@ -102,9 +127,9 @@ public class Game extends Application {
 
         player.update(input);
 
-        for(IDrawable object : drawableObjects)
+        for(Rock object : this.gravityObjects)
         {
-            object.update(deltaSec);
+            object.update(deltaSec, this.gravityObjects);
         }
 
         this.physics.updatePhysics(physicalObjects, gravityObjects);
@@ -117,9 +142,11 @@ public class Game extends Application {
         this.camera.setCenter(player.getCenterX(), player.getCenterY());
 
         gc.setFill(Color.BLACK);
-        gc.fillRect(0,0, this.currentWidth,this.currentHeight);
+        gc.fillRect(0, 0, this.currentWidth, this.currentHeight);
 
         this.map.draw(gc, this.camera);
+
+        UI.predraw(gc, this.camera, this.player);
 
         for(IDrawable object : drawableObjects)
         {
@@ -130,7 +157,8 @@ public class Game extends Application {
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage) throws Exception
+    {
         stage.setTitle("Solar 2 Clone");
         Group root = new Group();
         Canvas canvas = new Canvas(this.initialWidth, this.initialHeight);

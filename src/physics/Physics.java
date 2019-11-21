@@ -31,11 +31,16 @@ public class Physics {
                 double actingForce = (Physics.gravitationConstant * (rocks.get(i).getMass() * rocks.get(y).getMass())) /
                         Math.pow(objectDistance, 2);
 
-                rocks.get(i).changeSpeedX(-(actingForce / rocks.get(i).getMass()) * multi.getX());
-                rocks.get(i).changeSpeedY(-(actingForce / rocks.get(i).getMass()) * multi.getY());
-
-                rocks.get(y).changeSpeedX((actingForce / rocks.get(y).getMass()) * multi.getX());
-                rocks.get(y).changeSpeedY((actingForce / rocks.get(y).getMass()) * multi.getY());
+                if(!rocks.get(i).isInOrbit())
+                {
+                    rocks.get(i).changeSpeedX(-(actingForce / rocks.get(i).getMass()) * multi.getX());
+                    rocks.get(i).changeSpeedY(-(actingForce / rocks.get(i).getMass()) * multi.getY());
+                }
+                if(!rocks.get(y).isInOrbit())
+                {
+                    rocks.get(y).changeSpeedX((actingForce / rocks.get(y).getMass()) * multi.getX());
+                    rocks.get(y).changeSpeedY((actingForce / rocks.get(y).getMass()) * multi.getY());
+                }
             }
         }
     }
@@ -55,45 +60,51 @@ public class Physics {
         }
     }
 
-    private void updateGravityCatch()
-    {
-
-    }
-
     private void collideObjects(Rock object1, Rock object2)
     {
         Vec2d delta = Vec2d.subtractVectors(object1.getSpeedVector(), object2.getSpeedVector());
         double speedDiff = delta.getSize() * Vec2d.dot(object1.getSpeedVector(), object2.getSpeedVector());
 
-        if(Math.abs(speedDiff) > this.mergeThreshold) {
+        if(object1.isInOrbit())
+            object1.removeFromOrbit();
+        if(object2.isInOrbit())
+            object2.removeFromOrbit();
+
+        if(Math.abs(speedDiff) > this.mergeThreshold && object1.isAsteroid() && object2.isAsteroid())
+        {
             mergeObjects(object1, object2);
+        }
+        else
+        {
+            slowObjectsCollision(object1, object2);
         }
         bounceObjects(object1, object2);
     }
 
     private void mergeObjects(Rock object1, Rock object2)
     {
-        if(object1.isAsteroid() && object2.isAsteroid())
-        {
-            object1.addScore((int)object1.getMass());
-            object2.destroy();
+        object1.addScore((int)object1.getMass());
+        object2.destroy();
 
-            if(object1.getScore() >= RockType.rockTypes.get(object1.getRockTypeIndex()).getToNext())
-            {
-                object1.increaseRockTypeIndex();
-            }
+        object1.checkIncreaseRockTypeIndex();
+    }
+    private void slowObjectsCollision(Rock object1, Rock object2)
+    {
+        double relSpeed = object1.getSpeedVector().subtract(object2.getSpeedVector()).getSize();
+
+        if(!object2.isAsteroid() && !object2.isBlackHole()) //object 2 will get dmg
+        {
+            object2.addDmg(-(int)(object1.getMass() * relSpeed));
+
+            if(relSpeed > 1 && object1.isAsteroid() && !object2.isPlayer())
+                object1.destroy();
         }
-        else if(object1.isBlackHole())
+        if(!object1.isAsteroid() && !object1.isBlackHole())
         {
+            object1.addDmg(-(int)(object2.getMass() * relSpeed));
 
-        }
-        else if(object2.isBlackHole())
-        {
-
-        }
-        else
-        {
-
+            if(relSpeed > 1 && object2.isAsteroid() && !object2.isPlayer())
+                object2.destroy();
         }
     }
 

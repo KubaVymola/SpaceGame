@@ -8,4 +8,8 @@ public class Projectile extends PhysicalObject {
     public Projectile(double posX, double posY, double angle, double radius, String spriteSourceAbsolute) {
         super(posX, posY, angle, radius, spriteSourceAbsolute);
     }
+
+    public void update(double deltaSecond)
+    {
+    }
 }

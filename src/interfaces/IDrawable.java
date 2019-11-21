@@ -5,5 +5,4 @@ import javafx.scene.canvas.GraphicsContext;
 
 public interface IDrawable {
     public void draw(GraphicsContext graphicsContext, Camera camera);
-    public void update(double deltaSecond);
 }

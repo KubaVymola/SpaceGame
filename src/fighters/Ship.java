@@ -14,4 +14,9 @@ public class Ship extends PhysicalObject {
     public void receiveDMG(double amount) {
         this.life -= amount;
     }
+
+
+    public void update(double deltaSecond)
+    {
+    }
 }
