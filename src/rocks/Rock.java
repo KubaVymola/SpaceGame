@@ -1,6 +1,7 @@
 package rocks;
 
 import fighters.Cannon;
+import game.Game;
 import game.PhysicalObject;
 import interfaces.IDamagable;
 import physics.Orbit;
@@ -35,7 +36,9 @@ public class Rock extends PhysicalObject implements IDamagable {
 
         this.rockTypeIndex = rockTypeIndex;
         if(this.rockTypeIndex != 0)
-            this.addScore((int)RockType.rockTypes.get(this.rockTypeIndex - 1).getToNext());
+            this.addScore(Game.r.nextInt((int)RockType.rockTypes.get(this.rockTypeIndex).getToNext() -
+                    (int)RockType.rockTypes.get(this.rockTypeIndex - 1).getToNext()) +
+                    (int)RockType.rockTypes.get(this.rockTypeIndex).getToNext());
 
         this.rotationSpeed = 0.02;
         this.parentOrbitIndex = -1;
@@ -51,7 +54,20 @@ public class Rock extends PhysicalObject implements IDamagable {
 
         this.setRadius(RockType.rockTypes.get(this.rockTypeIndex).getRadius());
         this.mass = RockType.rockTypes.get(this.rockTypeIndex).getMass();
+        this.dropAsteroids();
         this.calculateOrbits();
+    }
+
+    private void dropAsteroids()
+    {
+        if(this.rockTypeIndex != RockType.starsFrom)
+            return;
+
+        for(int i = this.childBodies.size() - 1; i >= 0; i--)
+        {
+            this.childBodies.get(i).removeFromOrbit();
+            //this.childBodies.remove(i);
+        }
     }
 
     private void calculateOrbits()
@@ -60,13 +76,16 @@ public class Rock extends PhysicalObject implements IDamagable {
 
         for(int i = 0; i < RockType.rockTypes.get(this.getRockTypeIndex()).getOrbits(); i++)
         {
-            double multiplier = 1.25;
-            if(this.isStar())
-                multiplier = 1.5;
-            double radius = this.getRadius() * 1.5 * multiplier + i * multiplier * this.getRadius();
+            double radius = this.getRadius() * 3 + i * 2 * this.getRadius();
             double velocity = Math.sqrt(Physics.gravitationConstant * this.getMass() / radius);
 
             orbits.add(new Orbit(radius, velocity));
+
+            for(Rock child : this.childBodies)
+            {
+                if(child.parentOrbitIndex == i)
+                    orbits.get(i).setOccupied(true);
+            }
         }
     }
 
@@ -85,8 +104,10 @@ public class Rock extends PhysicalObject implements IDamagable {
         if(!smallestDirectChild.eatSmallestChild()) //child has children, will be eaten
         {
             this.addScore((int)smallestDirectChild.getMass());
-            this.checkIncreaseRockTypeIndex();
+            this.orbits.get(smallestDirectChild.parentOrbitIndex).setOccupied(false);
+            this.childBodies.remove(smallestDirectChild);
             smallestDirectChild.destroy();
+            this.checkIncreaseRockTypeIndex();
         }
         return true;
     }

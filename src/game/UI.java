@@ -38,6 +38,7 @@ public class UI {
         gc.setFont(Font.font("Impact", 15));
         gc.setFill(Color.WHITE);
         gc.setStroke(Color.WHITE);
+        gc.setLineWidth(2);
 
         gc.drawImage(player.getSprite(), 25,40, 50, 50);
 

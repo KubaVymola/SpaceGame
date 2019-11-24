@@ -2,12 +2,15 @@ package game;
 
 /**
  *
+ * TODO 0: Make one time input non-event based!
+ * *TODO 0: Change the way objects (especially rocks) are stored in the Game class
+ * *TODO 0.1: Change the update method and draw method to accomodate for the previous change
  * *TODO 1: Catch obejcts into orbit around planet
  * *TODO 1.1: Make planets catch asteroids
  * *TODO 1.2: Make suns catch planets
  * *TODO 1.3: Test correct catching (also non-planet, non-sun cannot catch anything)
- * TODO 1.4: Eating mechanics to grow planets and suns
- * TODO 2: Damage system to hurt asteroids, planets and suns
+ * *TODO 1.4: Eating mechanics to grow planets and suns
+ * *TODO 2: Damage system to hurt asteroids, planets and suns
  * TODO 2.1: Death and restart system
  * TODO 3: Black hole mechanics
  * TODO 4: Generate random objects outside of screen
@@ -54,9 +57,8 @@ public class Game extends Application {
     private int currentWidth;
     private int currentHeight;
 
-    private ArrayList<PhysicalObject> physicalObjects;
-    private ArrayList<IDrawable> drawableObjects;
-    private ArrayList<Rock> gravityObjects;
+
+    private ArrayList<Rock> rocks;
 
     private Player player;
     private Camera camera;
@@ -64,6 +66,7 @@ public class Game extends Application {
     private Physics physics;
 
     private ArrayList<KeyCode> input = new ArrayList<>();
+    private ArrayList<KeyCode> OneTimeInput = new ArrayList<>();
 
     public Game() {
         r = new Random(3);
@@ -73,28 +76,22 @@ public class Game extends Application {
         this.camera = new Camera(0, 0);
         this.physics = new Physics();
 
-        this.physicalObjects = new ArrayList<>();
-        this.drawableObjects = new ArrayList<>();
-        this.gravityObjects = new ArrayList<>();
+        this.rocks = new ArrayList<>();
     }
 
     @Override
     public void init() throws Exception {
         super.init();
 
-        player = new Player(0,0,0,0, 0.1, 5);
-        physicalObjects.add(player);
-        drawableObjects.add(player);
-        gravityObjects.add(player);
+        player = new Player(0,0,0,0, 0.1, 3);
+        this.rocks.add(player);
 
         for(int i = 0; i < 15; i++)
         {
-            AI newObject = new AI(r.nextInt(800) - 400, r.nextInt(600) - 300, r.nextDouble(),
-                    0, 0, r.nextInt(4));
+            AI newObject = new AI(r.nextInt(1600) - 800, r.nextInt(1600) - 800, r.nextDouble(),
+                    0, 0, 0);
 
-            physicalObjects.add(newObject);
-            drawableObjects.add(newObject);
-            gravityObjects.add(newObject);
+            this.rocks.add(newObject);
         }
 
     }
@@ -102,14 +99,16 @@ public class Game extends Application {
 
     private void optimize()
     {
-        for(int i = this.gravityObjects.size() - 1; i >= 0; i--)
+        for(int i = this.rocks.size() - 1; i >= 0; i--)
         {
-            Rock r = this.gravityObjects.get(i);
-            if(r.isDestroyed())
+            if(this.rocks.get(i).isDestroyed())
             {
-                this.gravityObjects.remove(r);
-                this.drawableObjects.remove(r);
-                this.physicalObjects.remove(r);
+                this.rocks.remove(i);
+                continue;
+            }
+            if(this.rocks.get(i).getPos().subtract(this.player.getPos()).getSize() > this.camera.getCameraSizeX() * 3)
+            {
+                this.rocks.remove(i);
                 continue;
             }
         }
@@ -117,8 +116,30 @@ public class Game extends Application {
 
     private void gameControl(KeyCode e, Stage stage)
     {
-        if(e == KeyCode.ESCAPE)
+        if (e == KeyCode.ESCAPE)
             stage.close();
+    }
+
+    private void generateObjects()
+    {
+        double chance = 180 / this.player.getSpeedVector().getSize();
+
+        if(r.nextInt((int)chance) == 0)
+        {
+            double posX = r.nextInt(800) - 400;
+            double posY = r.nextInt(800) - 400;
+
+            if(posX > 0)
+                posX = this.camera.getCameraSizeX() + posX;
+            if(posY > 0)
+                posY = this.camera.getCameraSizeY() + posY;
+
+            posX = this.camera.getTopLeftX() + posX;
+            posY = this.camera.getTopLeftY() + posY;
+
+            this.rocks.add(new AI(posX, posY, r.nextInt(180),
+                    r.nextDouble() - 0.5d, r.nextDouble() - 0.5d, 0));
+        }
     }
 
     private void update(long deltaNano)
@@ -127,13 +148,14 @@ public class Game extends Application {
 
         player.update(input);
 
-        for(Rock object : this.gravityObjects)
+        for(Rock object : this.rocks)
         {
-            object.update(deltaSec, this.gravityObjects);
+            object.update(deltaSec, this.rocks);
         }
 
-        this.physics.updatePhysics(physicalObjects, gravityObjects);
+        this.physics.updatePhysics(rocks);
 
+        this.generateObjects();
         this.optimize();
     }
 
@@ -148,7 +170,7 @@ public class Game extends Application {
 
         UI.predraw(gc, this.camera, this.player);
 
-        for(IDrawable object : drawableObjects)
+        for(IDrawable object : rocks)
         {
             object.draw(gc, this.camera);
         }

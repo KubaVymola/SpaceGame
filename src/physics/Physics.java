@@ -3,7 +3,6 @@ package physics;
 import game.Game;
 import game.PhysicalObject;
 import rocks.Rock;
-import rocks.RockType;
 
 import java.util.ArrayList;
 
@@ -11,12 +10,12 @@ public class Physics {
     public static final double gravitationConstant = 0.02;
     private final double bounceConstant = 1;
     private final double restitution = 0.9;
-    private final double mergeThreshold = 0.2d;
+    private final double mergeThreshold = 0.5d;
 
-    public void updatePhysics(ArrayList<PhysicalObject> spaceObjects, ArrayList<Rock> rocks)
+    public void updatePhysics(ArrayList<Rock> rocks)
     {
         updateGravity(rocks);
-        updateCollisions(spaceObjects);
+        updateRockCollisions(rocks);
     }
 
     private void updateGravity(ArrayList<Rock> rocks)
@@ -45,17 +44,17 @@ public class Physics {
         }
     }
 
-    private void updateCollisions(ArrayList<PhysicalObject> spaceObjects) {
-        for (int i = 0; i < spaceObjects.size(); i++) {
-            if (!Rock.class.isAssignableFrom(spaceObjects.get(i).getClass()))
+    private void updateRockCollisions(ArrayList<Rock> rocks) {
+        for (int i = 0; i < rocks.size(); i++) {
+            if (!Rock.class.isAssignableFrom(rocks.get(i).getClass()))
                 continue;
 
-            for (int x = i + 1; x < spaceObjects.size(); x++) {
-                if (!getObjectsColided(spaceObjects.get(i), spaceObjects.get(x)))
+            for (int x = i + 1; x < rocks.size(); x++) {
+                if (!getObjectsColided(rocks.get(i), rocks.get(x)))
                     continue;
 
                 // objects collided
-                collideObjects((Rock) spaceObjects.get(i), (Rock) spaceObjects.get(x));
+                collideObjects(rocks.get(i), rocks.get(x));
             }
         }
     }
@@ -63,7 +62,8 @@ public class Physics {
     private void collideObjects(Rock object1, Rock object2)
     {
         Vec2d delta = Vec2d.subtractVectors(object1.getSpeedVector(), object2.getSpeedVector());
-        double speedDiff = delta.getSize() * Vec2d.dot(object1.getSpeedVector(), object2.getSpeedVector());
+        double speedDiff = delta.getSize() * Vec2d.subtractVectors(object1.getSpeedVector(), object2.getSpeedVector()).getSize();
+        //double speedDiff = delta.getSize() * Vec2d.dot(object1.getSpeedVector(), object2.getSpeedVector());
 
         if(object1.isInOrbit())
             object1.removeFromOrbit();

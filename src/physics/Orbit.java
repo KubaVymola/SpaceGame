@@ -3,7 +3,7 @@ package physics;
 import java.util.ArrayList;
 
 public class Orbit {
-    public static double orbitRadiusMargin = 50;
+    public static double orbitRadiusMargin = 10;
     public static double orbitSpeedMargin = 0.7;
     public static double orbitAngleMargin = 0.7;
 

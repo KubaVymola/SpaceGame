@@ -58,23 +58,23 @@ public class RockType {
     {
         rockTypes = new ArrayList<>();
 
-        rockTypes.add(new RockType("Asteroid", 25, 15, 0, 100,
+        rockTypes.add(new RockType("Asteroid", 25, 10, 0, 100,
                 new String[] { "/images/asteroid.png", "/images/asteroid-2.png" } ));
 
-        rockTypes.add(new RockType("Small Planet", 50, 35, 3, 200,
+        rockTypes.add(new RockType("Small Planet", 50, 15, 3, 200,
                 new String[] { "/images/medium-planet.png" } ));
-        rockTypes.add(new RockType("Medium Planet", 75, 40, 4, 300,
+        rockTypes.add(new RockType("Medium Planet", 75, 17, 4, 300,
                 new String[] { "/images/medium-planet.png" } ));
-        rockTypes.add(new RockType("Planet With Life", 100, 45, 6, 450,
+        rockTypes.add(new RockType("Planet With Life", 100, 20, 6, 450,
                 new String[] { "/images/life-planet.png" } ));
 
-        rockTypes.add(new RockType("Small Star", 500, 80, 3, 1000,
+        rockTypes.add(new RockType("Small Star", 500, 30, 3, 1000,
                 new String[] { "/images/small-star.png" } ));
-        rockTypes.add(new RockType("Medium Star", 1000, 90, 4, 2000,
+        rockTypes.add(new RockType("Medium Star", 1000, 40, 4, 2000,
                 new String[] { "/images/medium-star.png" } ));
-        rockTypes.add(new RockType("Large Star", 1500, 110, 6, 5000,
+        rockTypes.add(new RockType("Large Star", 1500, 60, 6, 5000,
                 new String[] { "/images/medium-star.png" } ));
-        rockTypes.add(new RockType("Neutron Star", 2500, 35, 8, 10000,
+        rockTypes.add(new RockType("Neutron Star", 2500, 15, 8, 10000,
                 new String[] { "/images/medium-star.png" } ));
 
         rockTypes.add(new RockType("Black Hole", 10000, 5, 0, 50000,
