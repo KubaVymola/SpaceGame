@@ -7,5 +7,5 @@ import java.util.ArrayList;
 
 public interface IControllable {
     public void control(ArrayList<KeyCode> downKeys);
-    public void oneTimeAction(KeyCode pressedKey);
+    public void oneTimeAction(ArrayList<KeyCode> pressedKeys);
 }

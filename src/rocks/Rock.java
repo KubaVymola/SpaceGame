@@ -38,7 +38,7 @@ public class Rock extends PhysicalObject implements IDamagable {
         if(this.rockTypeIndex != 0)
             this.addScore(Game.r.nextInt((int)RockType.rockTypes.get(this.rockTypeIndex).getToNext() -
                     (int)RockType.rockTypes.get(this.rockTypeIndex - 1).getToNext()) +
-                    (int)RockType.rockTypes.get(this.rockTypeIndex).getToNext());
+                    (int)RockType.rockTypes.get(this.rockTypeIndex - 1).getToNext());
 
         this.rotationSpeed = 0.02;
         this.parentOrbitIndex = -1;
@@ -103,9 +103,8 @@ public class Rock extends PhysicalObject implements IDamagable {
 
         if(!smallestDirectChild.eatSmallestChild()) //child has children, will be eaten
         {
+            smallestDirectChild.removeFromOrbit();
             this.addScore((int)smallestDirectChild.getMass());
-            this.orbits.get(smallestDirectChild.parentOrbitIndex).setOccupied(false);
-            this.childBodies.remove(smallestDirectChild);
             smallestDirectChild.destroy();
             this.checkIncreaseRockTypeIndex();
         }
@@ -270,6 +269,9 @@ public class Rock extends PhysicalObject implements IDamagable {
             if(r.isPlayer())
                 continue;
 
+            if(r.isDestroyed())
+                continue;
+
             if((this.isPlanet() && !r.isAsteroid() || (this.isStar() && !r.isPlanet())))
                 continue;
 
@@ -306,6 +308,9 @@ public class Rock extends PhysicalObject implements IDamagable {
 
     public void update(double deltaSecond, ArrayList<Rock> allRocks)
     {
+        if(this.isDestroyed())
+            return;
+
         if(this.isInOrbit())
             this.moveInOrbit();
 

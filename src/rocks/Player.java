@@ -23,9 +23,9 @@ public class Player extends Rock implements IControllable {
     }
 
     @Override
-    public void oneTimeAction(KeyCode pressedKey)
+    public void oneTimeAction(ArrayList<KeyCode> pressedKeys)
     {
-        if (pressedKey == KeyCode.SHIFT)
+        if (pressedKeys.contains(KeyCode.SHIFT))
         {
             this.eatSmallestChild();
             //this.setRadius(this.getRadius() == 50 ? 100 : 50);
@@ -83,8 +83,9 @@ public class Player extends Rock implements IControllable {
             this.changeSpeedY(-this.speedup);
     }
 
-    public void update(ArrayList<KeyCode> downKeys)
+    public void update(ArrayList<KeyCode> downKeys, ArrayList<KeyCode> pressedKeys)
     {
+        this.oneTimeAction(pressedKeys);
         this.control(downKeys);
         //this.updateSpeed();
     }

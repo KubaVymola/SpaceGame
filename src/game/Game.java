@@ -50,6 +50,7 @@ import java.util.Random;
 
 public class Game extends Application {
     public static Random r;
+    public static int generateChance = 160;
 
     private final int initialWidth = 1360;
     private final int initialHeight = 768;
@@ -66,7 +67,7 @@ public class Game extends Application {
     private Physics physics;
 
     private ArrayList<KeyCode> input = new ArrayList<>();
-    private ArrayList<KeyCode> OneTimeInput = new ArrayList<>();
+    private ArrayList<KeyCode> oneTimeInput = new ArrayList<>();
 
     public Game() {
         r = new Random(3);
@@ -122,7 +123,7 @@ public class Game extends Application {
 
     private void generateObjects()
     {
-        double chance = 180 / this.player.getSpeedVector().getSize();
+        double chance = Game.generateChance / this.player.getSpeedVector().getSize();
 
         if(r.nextInt((int)chance) == 0)
         {
@@ -146,7 +147,7 @@ public class Game extends Application {
     {
         double deltaSec = deltaNano / 1e9;
 
-        player.update(input);
+        player.update(input, oneTimeInput);
 
         for(Rock object : this.rocks)
         {
@@ -157,6 +158,7 @@ public class Game extends Application {
 
         this.generateObjects();
         this.optimize();
+        this.oneTimeInput.clear();
     }
 
     private void draw(GraphicsContext gc)
@@ -213,11 +215,12 @@ public class Game extends Application {
         scene.setOnKeyPressed(keyEvent -> {
             KeyCode keyPressed = keyEvent.getCode();
 
+            oneTimeInput.clear();
             if(!input.contains(keyPressed))
             {
-                player.oneTimeAction(keyPressed);
                 gameControl(keyPressed, stage);
                 // one time actions
+                oneTimeInput.add(keyPressed);
                 input.add(keyPressed);
             }
         });
