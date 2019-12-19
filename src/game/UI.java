@@ -8,11 +8,13 @@ import rocks.Player;
 import rocks.Rock;
 import rocks.RockType;
 
+import java.util.ArrayList;
+
 public class UI {
     private static final int xAlign = 95;
 
 
-    public static void predraw(GraphicsContext gc, Camera camera, Player player)
+    public static void predraw(GraphicsContext gc, Camera camera, Player player, ArrayList<Rock> allRocks)
     {
         if(!player.isAlive())
             return;
@@ -26,14 +28,26 @@ public class UI {
                     player.getCenterY() - camera.getTopLeftY() - o.getRadius(),
                     o.getRadius() * 2, o.getRadius() * 2);
         }
-        for(Rock r : player.getChildBodies())
+        for(Rock r : allRocks)
         {
-            gc.strokeLine(player.getCenterX() - camera.getTopLeftX(), player.getCenterY() - camera.getTopLeftY(),
-                    r.getCenterX() - camera.getTopLeftX(), r.getCenterY() - camera.getTopLeftY());
+            UI.drawOrbitLine(gc, camera, r);
         }
     }
 
-    public static void draw(GraphicsContext gc, Camera camera, Player player)
+    private static void drawOrbitLine(GraphicsContext gc, Camera camera, Rock from)
+    {
+        //gc.strokeLine(from.getCenterX() - camera.getTopLeftX(), from.getCenterY() - camera.getTopLeftY(),
+        //        to.getCenterX() - camera.getTopLeftX(), to.getCenterY() - camera.getTopLeftY());
+
+        for(Rock r : from.getChildBodies())
+        {
+            gc.strokeLine(from.getCenterX() - camera.getTopLeftX(), from.getCenterY() - camera.getTopLeftY(),
+                    r.getCenterX() - camera.getTopLeftX(), r.getCenterY() - camera.getTopLeftY());
+            //UI.drawOrbitLine(gc, camera, to, r);
+        }
+    }
+
+    public static void draw(GraphicsContext gc, Camera camera, Player player, int highScore)
     {
         gc.setFont(Font.font("Impact", 15));
         gc.setFill(Color.WHITE);
@@ -49,6 +63,10 @@ public class UI {
         gc.strokeRect(UI.xAlign, 100,50, 10);
         gc.fillRect(UI.xAlign, 100,
                 ((double)player.getScore() / RockType.rockTypes.get(player.getRockTypeIndex()).getToNext()) * 50, 10);
+
+        gc.fillText("High score: " + highScore, UI.xAlign, 130);
+
+
 
 
         gc.setLineWidth(0.5);

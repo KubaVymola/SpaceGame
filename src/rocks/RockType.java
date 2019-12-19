@@ -12,6 +12,7 @@ public class RockType {
     public static int planetsTo = 3;
     public static int starsFrom = 4;
     public static int starsTo = 7;
+    public static int blackHoleIndex = 8;
 
     private double toNext;
     private double mass;

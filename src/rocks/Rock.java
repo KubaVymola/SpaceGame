@@ -9,12 +9,15 @@ import physics.Physics;
 import physics.Vec2d;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 
-public class Rock extends PhysicalObject implements IDamagable {
+public class Rock extends PhysicalObject implements IDamagable, Comparable<Rock> {
 
     private ArrayList<Cannon> cannons;
     private ArrayList<Rock> childBodies;
-    private ArrayList<Orbit> orbits;
+    //TODO used linked list
+    private LinkedList<Orbit> orbits;
     private Rock parent;
 
     private double mass;
@@ -30,7 +33,7 @@ public class Rock extends PhysicalObject implements IDamagable {
         super(centerX, centerY, angle, RockType.rockTypes.get(rockTypeIndex).getRadius(), speedX, speedY,
                 RockType.rockTypes.get(rockTypeIndex).getTextureName());
 
-        this.orbits = new ArrayList<>();
+        this.orbits = new LinkedList<>();
         this.childBodies = new ArrayList<>();
         this.cannons = new ArrayList<>();
 
@@ -54,13 +57,13 @@ public class Rock extends PhysicalObject implements IDamagable {
 
         this.setRadius(RockType.rockTypes.get(this.rockTypeIndex).getRadius());
         this.mass = RockType.rockTypes.get(this.rockTypeIndex).getMass();
-        this.dropAsteroids();
+        this.clearObrbits();
         this.calculateOrbits();
     }
 
-    private void dropAsteroids()
+    private void clearObrbits()
     {
-        if(this.rockTypeIndex != RockType.starsFrom)
+        if(this.rockTypeIndex != RockType.starsFrom && this.rockTypeIndex != RockType.blackHoleIndex)
             return;
 
         for(int i = this.childBodies.size() - 1; i >= 0; i--)
@@ -70,9 +73,16 @@ public class Rock extends PhysicalObject implements IDamagable {
         }
     }
 
+    @Override
+    public int compareTo(Rock o)
+    {
+        //TODO comparator
+        return this.parentOrbitIndex - o.parentOrbitIndex;
+    }
+
     private void calculateOrbits()
     {
-        this.orbits = new ArrayList<>();
+        this.orbits = new LinkedList<>();
 
         for(int i = 0; i < RockType.rockTypes.get(this.getRockTypeIndex()).getOrbits(); i++)
         {
@@ -89,26 +99,39 @@ public class Rock extends PhysicalObject implements IDamagable {
         }
     }
 
-    public boolean eatSmallestChild()
+    public ArrayList<Rock> getAllChildren()
     {
-        if(this.childBodies.isEmpty()) //has no children, will be eaten
-            return false;
+        ArrayList<Rock> toReturn = new ArrayList<>();
 
-        Rock smallestDirectChild = this.childBodies.get(this.childBodies.size() - 1);
-        for(int i = this.childBodies.size() - 2; i >= 0; i--)
-        {
-            if(this.childBodies.get(i).getMass() < smallestDirectChild.getMass())
-                smallestDirectChild = this.childBodies.get(i);
-        }
+        //TODO agregovana funkce
+        this.childBodies.forEach((object) -> {
+            toReturn.add(object);
+            object.getAllChildren().forEach((nextChild) -> toReturn.add(nextChild));
+        });
 
-        if(!smallestDirectChild.eatSmallestChild()) //child has children, will be eaten
-        {
-            smallestDirectChild.removeFromOrbit();
-            this.addScore((int)smallestDirectChild.getMass());
-            smallestDirectChild.destroy();
-            this.checkIncreaseRockTypeIndex();
-        }
-        return true;
+        return toReturn;
+    }
+
+    public void eatSmallestChild()
+    {
+
+        ArrayList<Rock> allChildren = this.getAllChildren();
+
+        if(allChildren.isEmpty())
+            return;
+
+        //TODO agregovana funkce
+        Rock smallestChild = allChildren.stream().min((object1, object2) -> (int)object1.getMass() - (int)object2.getMass()).get();
+
+
+        smallestChild.parent.addScore((int)smallestChild.getMass());
+        smallestChild.parent.checkIncreaseRockTypeIndex();
+
+        if(smallestChild == null)
+            return;
+
+        smallestChild.removeFromOrbit();
+        smallestChild.destroy();
     }
 
     public double getMass()
@@ -121,7 +144,7 @@ public class Rock extends PhysicalObject implements IDamagable {
         return rockTypeIndex;
     }
 
-    public ArrayList<Orbit> getOrbits()
+    public LinkedList<Orbit> getOrbits()
     {
         return orbits;
     }
@@ -209,7 +232,8 @@ public class Rock extends PhysicalObject implements IDamagable {
     }
     public void removeFromOrbit()
     {
-        this.parent.childRemovedFromOrbit(this, parentOrbitIndex);
+        if(this.parent != null)
+            this.parent.childRemovedFromOrbit(this, parentOrbitIndex);
 
         this.parentOrbitIndex = -1;
         this.parent = null;
@@ -294,12 +318,12 @@ public class Rock extends PhysicalObject implements IDamagable {
                         this.orbits.get(i).getSpeed() / Orbit.orbitSpeedMargin < relativeSpeedSize)
                     continue;
 
-                //if(Math.abs(cosAngle) > Orbit.orbitAngleMargin)
-                //    continue;
-
-                //All checks good; adding to orbit
                 r.moveToOrbit(this, i, true);
                 this.childBodies.add(r);
+
+                //TODO sort (nejblizsi objeky na obeznych drahach maji nejmensi index)
+                Collections.sort(this.childBodies);
+
                 this.orbits.get(i).setOccupied(true);
                 break;
             }

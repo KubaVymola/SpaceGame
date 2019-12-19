@@ -13,8 +13,8 @@ package game;
  * *TODO 2: Damage system to hurt asteroids, planets and suns
  * TODO 2.1: Death and restart system
  * TODO 3: Black hole mechanics
- * TODO 4: Generate random objects outside of screen
- * TODO 4.1: Optimize the amount of existing bodies (to limit the n^2 complexity) outside of view
+ * *TODO 4: Generate random objects outside of screen
+ * *TODO 4.1: Optimize the amount of existing bodies (to limit the n^2 complexity) outside of view
  * TODO 5: Planet with life
  * TODO 5.1: Life evolution mechanics
  * TODO 5.2: Shiled mechanics
@@ -44,13 +44,17 @@ import rocks.Player;
 import rocks.Rock;
 import rocks.RockType;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 
 public class Game extends Application {
     public static Random r;
-    public static int generateChance = 160;
+    public static int generateChance = 50;
 
     private final int initialWidth = 1360;
     private final int initialHeight = 768;
@@ -58,6 +62,10 @@ public class Game extends Application {
     private int currentWidth;
     private int currentHeight;
 
+    private int highScore;
+    private String highScoreFileName;
+    //BufferedWriter highScoreWriter;
+    //Scanner highScoreReader;
 
     private ArrayList<Rock> rocks;
 
@@ -78,13 +86,35 @@ public class Game extends Application {
         this.physics = new Physics();
 
         this.rocks = new ArrayList<>();
+
+        this.highScoreFileName = "high-score.txt";
+        this.loadHighScore();
+    }
+
+    private void loadHighScore()
+    {
+        if(new File(this.highScoreFileName).exists())
+        {
+            //TODO cteni ze souboru
+            try
+            {
+                Scanner reader = new Scanner(new File(this.highScoreFileName));
+                this.highScore = reader.nextInt();
+                reader.close();
+            }
+            catch (Exception e) { }
+        }
+        else
+        {
+            this.highScore = 0;
+        }
     }
 
     @Override
     public void init() throws Exception {
         super.init();
 
-        player = new Player(0,0,0,0, 0.1, 3);
+        player = new Player(0,0,0,0, 0.1, 0);
         this.rocks.add(player);
 
         for(int i = 0; i < 15; i++)
@@ -94,7 +124,6 @@ public class Game extends Application {
 
             this.rocks.add(newObject);
         }
-
     }
 
 
@@ -107,7 +136,7 @@ public class Game extends Application {
                 this.rocks.remove(i);
                 continue;
             }
-            if(this.rocks.get(i).getPos().subtract(this.player.getPos()).getSize() > this.camera.getCameraSizeX() * 3)
+            if(this.rocks.get(i).getCenter().subtract(this.player.getCenter()).getSize() > this.camera.getCameraSizeX() * 1.5d)
             {
                 this.rocks.remove(i);
                 continue;
@@ -125,6 +154,14 @@ public class Game extends Application {
     {
         double chance = Game.generateChance / this.player.getSpeedVector().getSize();
 
+        int rockType = 0;
+
+        if(r.nextInt(10) == 0 && this.player.getRockTypeIndex() >= 2)
+            rockType = RockType.starsFrom + r.nextInt(4);
+
+        if(r.nextInt(5) == 0)
+            rockType = RockType.planetsFrom + r.nextInt(3);
+
         if(r.nextInt((int)chance) == 0)
         {
             double posX = r.nextInt(800) - 400;
@@ -139,7 +176,25 @@ public class Game extends Application {
             posY = this.camera.getTopLeftY() + posY;
 
             this.rocks.add(new AI(posX, posY, r.nextInt(180),
-                    r.nextDouble() - 0.5d, r.nextDouble() - 0.5d, 0));
+                    r.nextDouble() - 0.5d, r.nextDouble() - 0.5d, rockType));
+        }
+    }
+
+    private void updateHighScore()
+    {
+        if(this.player.getScore() > this.highScore)
+        {
+            this.highScore = this.player.getScore();
+
+            try
+            {
+                //TODO zapis do soboru
+                BufferedWriter writer = new BufferedWriter(new FileWriter(this.highScoreFileName));
+                writer.write(String.valueOf(this.highScore));
+                writer.close();
+            }
+            catch (Exception e) { }
+
         }
     }
 
@@ -149,16 +204,16 @@ public class Game extends Application {
 
         player.update(input, oneTimeInput);
 
-        for(Rock object : this.rocks)
-        {
-            object.update(deltaSec, this.rocks);
-        }
+        //TODO stream foreach
+        this.rocks.stream().forEach((object) -> object.update(deltaSec, this.rocks));
 
         this.physics.updatePhysics(rocks);
 
         this.generateObjects();
         this.optimize();
         this.oneTimeInput.clear();
+
+        this.updateHighScore();
     }
 
     private void draw(GraphicsContext gc)
@@ -170,14 +225,14 @@ public class Game extends Application {
 
         this.map.draw(gc, this.camera);
 
-        UI.predraw(gc, this.camera, this.player);
+        UI.predraw(gc, this.camera, this.player, this.rocks);
 
         for(IDrawable object : rocks)
         {
             object.draw(gc, this.camera);
         }
 
-        UI.draw(gc, this.camera, this.player);
+        UI.draw(gc, this.camera, this.player, this.highScore);
     }
 
     @Override
