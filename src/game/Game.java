@@ -238,7 +238,7 @@ public class Game extends Application {
     @Override
     public void start(Stage stage) throws Exception
     {
-        stage.setTitle("Solar 2 Clone");
+        stage.setTitle("MOJE HRA");
         Group root = new Group();
         Canvas canvas = new Canvas(this.initialWidth, this.initialHeight);
         this.currentWidth = this.initialWidth;

@@ -43,19 +43,19 @@ public class Player extends Rock implements IControllable {
         {
             switch (key)
             {
-                case LEFT:
+                case A:
                     if(this.getSpeedX() > -this.maxSpeed)
                         this.changeSpeedX(-this.speedup);
                     break;
-                case RIGHT:
+                case D:
                     if(this.getSpeedX() < this.maxSpeed)
                         this.changeSpeedX(this.speedup);
                     break;
-                case UP:
+                case W:
                     if(this.getSpeedY() > -this.maxSpeed)
                         this.changeSpeedY(-this.speedup);
                     break;
-                case DOWN:
+                case S:
                     if(this.getSpeedY() < this.maxSpeed)
                         this.changeSpeedY(this.speedup);
                     break;
